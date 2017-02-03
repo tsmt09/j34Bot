@@ -57,8 +57,17 @@ class TeleBot34:
     def handleBotUpdates(self):
         #iterate items
         for e in self.updateQueue:
+            # get username
+            if 'username' in e['message']['from']:
+                username = e['message']['from']['username']
+            elif 'first_name' in e['message']['from']:
+                username = e['message']['from']['first_name']
+            else:
+                username = e['id']
+
+            # check for texts
             if e['message']['text'] == '/start':
-                print("user registers " + e['message']['from']['username'], end='')
+                print("user registers " + username, end='')
                 # search for id, dont register if registered
                 isRegistered = False
                 for u in self.regClients:
@@ -76,7 +85,7 @@ class TeleBot34:
                     pass
 
             elif e['message']['text'] == '/stop':
-                print("user unregisters " + e['message']['from']['username'], end='')
+                print("user unregisters " + username, end='')
                 # search for element
                 isRemoved = False
                 for u in self.regClients:
