@@ -62,7 +62,8 @@ class Paho34:
         self.pahoClient.connect(self.server, self.port)
 
     def loop(self):
-        if not self.pahoClient.connected:
-            self.connect()
+        # TODO: reconnect
+        #if not self.pahoClient.connected:
+        #    self.connect()
         self.pahoClient.loop()
         self.bot.loop()
