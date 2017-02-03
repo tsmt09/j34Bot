@@ -11,6 +11,7 @@ class Paho34:
     subs = None
     bot = None
     machineState = 0
+    conerrorPrintOnce = 0
 
     def __init__(self, config):
         # init MQTT Client
@@ -26,18 +27,17 @@ class Paho34:
         self.bot = TeleBot34(config['Telegram']['Token'])
 
     def onConnect(self, client, userdata, flags, rc):
-        global conerrorPrintOnce
         if rc == 0:
             print("connected")
-            conerrorPrintOnce = 0
+            self.conerrorPrintOnce = 0
             for k, v in self.subs.items():
                 print("subscribe to: "+v)
                 client.subscribe(v)
         # print error once if connection is unavailable
         else:
-            if conerrorPrintOnce == 0:
+            if self.conerrorPrintOnce == 0:
                 print("No Connect: " + str(rc))
-                conerrorPrintOnce = 1
+                self.conerrorPrintOnce = 1
 
     # onMessage simply print
     def onMessage(self, client, userdata
