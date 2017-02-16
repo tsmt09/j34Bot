@@ -55,19 +55,18 @@ class Paho34:
                   , msg):
         if msg.topic == "llearnd/machine/state":
             #convert to state
-            print("inc state")
             state = int(msg.payload.decode('utf-8'))
             if state == 2:
                 # state is now on
-                print("stateon")
                 # check if it was off
                 if self.machineState < 2:
+                    print("machine turned on")
                     self.bot.sendMessageToAllRegistered("Ein Waschgang wurde gestartet!")
             elif state < 2:
                 # state is now off
-                print("stateoff")
                 # check if it was on
                 if self.machineState == 2:
+                    print("machine turned off")
                     self.bot.sendMessageToAllRegistered("Ein Waschgang wurde beendet!")
             self.machineState = state
 
