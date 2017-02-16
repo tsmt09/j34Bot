@@ -7,7 +7,6 @@ config.read('config.ini')
 
 def main():
     mqtt = Paho34(config)
-    mqtt.connect()
     while True:
         mqtt.loop()
         time.sleep(0.2)

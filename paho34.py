@@ -10,6 +10,8 @@ class Paho34:
     port = None
     subs = None
     bot = None
+    timeout = 60
+    connected = 0
     machineState = 0
     conerrorPrintOnce = 0
 
@@ -18,6 +20,7 @@ class Paho34:
         self.pahoClient = mqtt.Client()
         self.pahoClient.on_connect = self.onConnect
         self.pahoClient.on_message = self.onMessage
+        self.pahoClient.on_disconnect = self.onDisconnect
         self.username = config['MQTT']['USER']
         self.password = config['MQTT']['PASS']
         self.server = config['MQTT']['SERV']
@@ -25,16 +28,24 @@ class Paho34:
         self.subs = config['MQTT-Subs']
         # init Bot
         self.bot = TeleBot34(config['Telegram']['Token'])
+        # connect
+        self.connect()
+
+    def onDisconnect(self, client, userdata, rc):
+        print("paho disconnect: "+str(rc))
+        self.connected = 0
 
     def onConnect(self, client, userdata, flags, rc):
         if rc == 0:
             print("connected")
+            self.connected = 1
             self.conerrorPrintOnce = 0
             for k, v in self.subs.items():
                 print("subscribe to: "+v)
                 client.subscribe(v)
         # print error once if connection is unavailable
         else:
+            print("noconnect")
             if self.conerrorPrintOnce == 0:
                 print("No Connect: " + str(rc))
                 self.conerrorPrintOnce = 1
@@ -44,14 +55,17 @@ class Paho34:
                   , msg):
         if msg.topic == "llearnd/machine/state":
             #convert to state
+            print("inc state")
             state = int(msg.payload.decode('utf-8'))
             if state == 2:
                 # state is now on
+                print("stateon")
                 # check if it was off
                 if self.machineState < 2:
                     self.bot.sendMessageToAllRegistered("Ein Waschgang wurde gestartet!")
             elif state < 2:
                 # state is now off
+                print("stateoff")
                 # check if it was on
                 if self.machineState == 2:
                     self.bot.sendMessageToAllRegistered("Ein Waschgang wurde beendet!")
@@ -59,11 +73,10 @@ class Paho34:
 
     def connect(self):
         self.pahoClient.username_pw_set(self.username, self.password)
-        self.pahoClient.connect(self.server, self.port)
+        self.pahoClient.connect(self.server, self.port, self.timeout)
 
     def loop(self):
-        # TODO: reconnect
-        #if not self.pahoClient.connected:
-        #    self.connect()
+        if self.connected < 1:
+            self.pahoClient.reconnect()
         self.pahoClient.loop()
         self.bot.loop()
