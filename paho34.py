@@ -12,6 +12,7 @@ class Paho34:
     bot = None
     timeout = 60
     connected = 0
+    connectedMsg = 0
     machineState = 0
     conerrorPrintOnce = 0
 
@@ -26,10 +27,10 @@ class Paho34:
         self.server = config['MQTT']['SERV']
         self.port = int(config['MQTT']['PORT'])
         self.subs = config['MQTT-Subs']
+        self.connected = 0
+        self.connectedMsg = 0
         # init Bot
         self.bot = TeleBot34(config['Telegram']['Token'])
-        # connect
-        self.connect()
 
     def onDisconnect(self, client, userdata, rc):
         print("paho disconnect: "+str(rc))
@@ -38,6 +39,7 @@ class Paho34:
     def onConnect(self, client, userdata, flags, rc):
         if rc == 0:
             print("connected")
+            self.connectedMsg = 0
             self.connected = 1
             self.conerrorPrintOnce = 0
             for k, v in self.subs.items():
@@ -71,11 +73,19 @@ class Paho34:
             self.machineState = state
 
     def connect(self):
-        self.pahoClient.username_pw_set(self.username, self.password)
-        self.pahoClient.connect(self.server, self.port, self.timeout)
+        print("conn")
+        try:
+            self.pahoClient.username_pw_set(self.username, self.password)
+            self.pahoClient.connect(self.server, self.port, self.timeout)
+        except ConnectionRefusedError as err:
+            print(err)
+            if self.connectedMsg == 0:
+                self.bot.sendMessageToAllRegistered("bot MQTT disconnected!");
+                print("connection refused by server")
+                self.connectedMsg = 1
 
     def loop(self):
         if self.connected < 1:
-            self.pahoClient.reconnect()
+            self.connect()
         self.pahoClient.loop()
         self.bot.loop()
