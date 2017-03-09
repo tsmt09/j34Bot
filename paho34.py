@@ -34,10 +34,12 @@ class Paho34:
 
     def onDisconnect(self, client, userdata, rc):
         print("paho disconnect: "+str(rc))
+        self.bot.sendMessageToAllRegistered("MQTT disconnected...");
         self.connected = 0
 
     def onConnect(self, client, userdata, flags, rc):
         if rc == 0:
+            self.bot.sendMessageToAllRegistered("bot MQTT connected!");
             print("connected")
             self.connectedMsg = 0
             self.connected = 1
@@ -73,14 +75,12 @@ class Paho34:
             self.machineState = state
 
     def connect(self):
-        print("conn")
         try:
             self.pahoClient.username_pw_set(self.username, self.password)
             self.pahoClient.connect(self.server, self.port, self.timeout)
         except ConnectionRefusedError as err:
-            print(err)
             if self.connectedMsg == 0:
-                self.bot.sendMessageToAllRegistered("bot MQTT disconnected!");
+                self.bot.sendMessageToAllRegistered("MQTT reconnect failed...");
                 print("connection refused by server")
                 self.connectedMsg = 1
 
