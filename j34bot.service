@@ -1,0 +1,14 @@
+[Unit]
+Description=J34 Telegram Bot
+After=multi-user.target
+
+[Service]
+Type=simple
+User=ts
+ExecPath=/home/ts/j34Bot/
+ExecStart=/usr/bin/python3 /home/ts/j34Bot/j34Bot.py --config /home/ts/j34Bot/config.ini
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
